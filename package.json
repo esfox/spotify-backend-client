@@ -3,16 +3,27 @@
   "version": "0.0.1",
   "author": "osairis100@gmail.com",
   "license": "MIT",
-  "main": "index.js",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
   "scripts": {
     "build": "etsc && tsc --emitDeclarationOnly"
   },
   "devDependencies": {
+    "@types/spotify-web-api-node": "^5.0.7",
     "@typescript-eslint/eslint-plugin": "^5.20.0",
     "@typescript-eslint/parser": "^5.20.0",
+    "dotenv": "^16.0.0",
     "esbuild": "^0.14.38",
     "esbuild-node-tsc": "^1.8.5",
     "eslint": "^8.14.0",
+    "ts-node-dev": "^1.1.8",
     "typescript": "^4.6.3"
+  },
+  "dependencies": {
+    "fastify": "^3.28.0",
+    "fastify-static": "^4.6.1",
+    "firebase": "^9.6.11",
+    "phin": "^3.6.1",
+    "spotify-web-api-node": "^5.0.2"
   }
 }
