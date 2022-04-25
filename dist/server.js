@@ -44,13 +44,14 @@ __export(server_exports, {
 });
 module.exports = __toCommonJS(server_exports);
 var import_fastify = __toESM(require("fastify"));
-var import_fastify_static = __toESM(require("fastify-static"));
+var import_fs = __toESM(require("fs"));
 var import_path = __toESM(require("path"));
 var import_spotify = require("./spotify");
 const server = (0, import_fastify.default)({ logger: true });
-server.register(import_fastify_static.default, {
-  root: import_path.default.join(__dirname, "public")
-});
+const currentDirectory = __filename.substring(0, __filename.lastIndexOf("/"));
+const pages = {
+  callback: import_fs.default.readFileSync(import_path.default.join(currentDirectory, "callback.html"), "utf-8")
+};
 server.get("/callback", (request, reply) => __async(void 0, null, function* () {
   const { code, state: userId } = request.query;
   let tokens;
@@ -62,6 +63,7 @@ server.get("/callback", (request, reply) => __async(void 0, null, function* () {
       server.log.error(response);
       return reply.status(response.status).send(response);
     }
+    server.log.error(error);
     return reply.status(500).send();
   }
   try {
@@ -70,7 +72,7 @@ server.get("/callback", (request, reply) => __async(void 0, null, function* () {
     server.log.error(error);
     return reply.status(500).send();
   }
-  return reply.sendFile("callback.html");
+  return reply.header("Content-Type", "text/html").send(pages.callback);
 }));
 const startServer = () => __async(void 0, null, function* () {
   try {

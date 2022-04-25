@@ -1,14 +1,14 @@
 import fastify from 'fastify';
-import fastifyStatic from 'fastify-static';
+import fs from 'fs';
 import path from 'path';
 import { FetchTokenError, Spotify } from './spotify';
 import { CallbackResponseBody } from './types';
 
 const server = fastify({ logger: true });
-
-server.register(fastifyStatic, {
-  root: path.join(__dirname, 'public'),
-});
+const currentDirectory = __filename.substring(0, __filename.lastIndexOf('/'));
+const pages = {
+  callback: fs.readFileSync(path.join(currentDirectory, 'callback.html'), 'utf-8'),
+};
 
 server.get<{ Querystring: CallbackResponseBody }>('/callback', async(request, reply) =>
 {
@@ -27,6 +27,7 @@ server.get<{ Querystring: CallbackResponseBody }>('/callback', async(request, re
       return reply.status(response.status).send(response);
     }
 
+    server.log.error(error);
     return reply.status(500).send();
   }
 
@@ -40,7 +41,7 @@ server.get<{ Querystring: CallbackResponseBody }>('/callback', async(request, re
     return reply.status(500).send();
   }
 
-  return reply.sendFile('callback.html');
+  return reply.header('Content-Type', 'text/html').send(pages.callback);
 });
 
 export const startServer = async () =>
