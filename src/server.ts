@@ -1,6 +1,7 @@
 import fastify from 'fastify';
 import fs from 'fs';
 import path from 'path';
+import { AuthTokens } from './auth-tokens';
 import { FetchTokenError, Spotify } from './spotify';
 import { CallbackResponseBody } from './types';
 
@@ -33,7 +34,7 @@ server.get<{ Querystring: CallbackResponseBody }>('/callback', async(request, re
 
   try
   {
-    await Spotify.saveAuthTokens(userId, tokens);
+    await AuthTokens.save(userId, tokens);
   }
   catch (error)
   {

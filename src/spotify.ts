@@ -1,10 +1,10 @@
 import p from 'phin';
 import SpotifyWebApi from 'spotify-web-api-node';
+import { AuthTokens } from './auth-tokens';
 import { Config } from './config';
-import { Firestore } from './firestore';
-import { AuthTokens, FetchTokenErrorResponse, FetchTokenResponseBody } from './types';
+import { FetchTokenErrorResponse, FetchTokenResponseBody } from './types';
 
-const callbackUrl = new URL('/callback', Config.BASE_URL).href;
+const callbackUrl = new URL('/callback', Config.SPOTIFY_CALLBACK_BASE_URL).href;
 const spotify =
 {
   urls:
@@ -63,27 +63,13 @@ export class Spotify
     };
   }
 
-  static async refreshAuthTokens(userId: string)
-  {
-    const { refreshToken } = await this.getAuthTokens(userId);
-    const newTokens = await this.requestAuthTokens(refreshToken);
-    await this.saveAuthTokens(userId, newTokens);
-    return newTokens;
-  }
-
-  static async getAuthTokens(userId: string)
-  {
-    return Firestore.getDocument<AuthTokens>(userId);
-  }
-
-  static async saveAuthTokens(userId: string, tokens: AuthTokens)
-  {
-    await Firestore.setDocument(userId, tokens);
-  }
-
   static async createAuthenticatedApi(userId: string)
   {
-    const { accessToken } = await Spotify.getAuthTokens(userId);
+    const tokens = await AuthTokens.get(userId);
+    if(!tokens)
+      throw new Error('Cannot get auth tokens');
+
+    const { accessToken } = tokens;
     const spotifyWebApi = new SpotifyWebApi();
     spotifyWebApi.setAccessToken(accessToken);
     return spotifyWebApi;
