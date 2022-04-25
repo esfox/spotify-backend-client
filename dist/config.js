@@ -21,7 +21,9 @@ __export(config_exports, {
 });
 module.exports = __toCommonJS(config_exports);
 const Config = {
-  BASE_URL: process.env.BASE_URL,
+  ENCRYPTION_ALGORITHM: process.env.ENCRYPTION_ALGORITHM,
+  ENCRYPTION_KEY: process.env.ENCRYPTION_KEY,
+  SPOTIFY_CALLBACK_BASE_URL: process.env.SPOTIFY_CALLBACK_BASE_URL,
   SPOTIFY_CLIENT_ID: process.env.SPOTIFY_CLIENT_ID,
   SPOTIFY_CLIENT_SECRET: process.env.SPOTIFY_CLIENT_SECRET,
   SPOTIFY_SCOPES: process.env.SPOTIFY_SCOPES,

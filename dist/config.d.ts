@@ -1,5 +1,7 @@
 export declare const Config: {
-    BASE_URL: string | undefined;
+    ENCRYPTION_ALGORITHM: string | undefined;
+    ENCRYPTION_KEY: string | undefined;
+    SPOTIFY_CALLBACK_BASE_URL: string | undefined;
     SPOTIFY_CLIENT_ID: string | undefined;
     SPOTIFY_CLIENT_SECRET: string | undefined;
     SPOTIFY_SCOPES: string | undefined;

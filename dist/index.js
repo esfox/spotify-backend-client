@@ -20,6 +20,7 @@ __export(src_exports, {
   SpotifyBackendClient: () => SpotifyBackendClient
 });
 module.exports = __toCommonJS(src_exports);
+var import_auth_tokens = require("./auth-tokens");
 var import_server = require("./server");
 var import_spotify = require("./spotify");
 class SpotifyBackendClient {
@@ -27,8 +28,8 @@ class SpotifyBackendClient {
 SpotifyBackendClient.startServer = import_server.startServer;
 SpotifyBackendClient.createAuthenticatedApi = import_spotify.Spotify.createAuthenticatedApi;
 SpotifyBackendClient.getLoginUrl = import_spotify.Spotify.getOAuthUrl;
-SpotifyBackendClient.getAuthTokens = import_spotify.Spotify.getAuthTokens;
-SpotifyBackendClient.refreshAuthTokens = import_spotify.Spotify.refreshAuthTokens;
+SpotifyBackendClient.getAuthTokens = import_auth_tokens.AuthTokens.get;
+SpotifyBackendClient.refreshAuthTokens = import_auth_tokens.AuthTokens.refresh;
 // Annotate the CommonJS export names for ESM import in node:
 0 && (module.exports = {
   SpotifyBackendClient

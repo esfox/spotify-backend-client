@@ -46,6 +46,7 @@ module.exports = __toCommonJS(server_exports);
 var import_fastify = __toESM(require("fastify"));
 var import_fs = __toESM(require("fs"));
 var import_path = __toESM(require("path"));
+var import_auth_tokens = require("./auth-tokens");
 var import_spotify = require("./spotify");
 const server = (0, import_fastify.default)({ logger: true });
 const currentDirectory = __filename.substring(0, __filename.lastIndexOf("/"));
@@ -67,7 +68,7 @@ server.get("/callback", (request, reply) => __async(void 0, null, function* () {
     return reply.status(500).send();
   }
   try {
-    yield import_spotify.Spotify.saveAuthTokens(userId, tokens);
+    yield import_auth_tokens.AuthTokens.save(userId, tokens);
   } catch (error) {
     server.log.error(error);
     return reply.status(500).send();

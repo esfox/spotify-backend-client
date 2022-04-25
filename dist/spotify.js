@@ -63,10 +63,10 @@ __export(spotify_exports, {
 module.exports = __toCommonJS(spotify_exports);
 var import_phin = __toESM(require("phin"));
 var import_spotify_web_api_node = __toESM(require("spotify-web-api-node"));
+var import_auth_tokens = require("./auth-tokens");
 var import_config = require("./config");
-var import_firestore = require("./firestore");
 var _a;
-const callbackUrl = new URL("/callback", import_config.Config.BASE_URL).href;
+const callbackUrl = new URL("/callback", import_config.Config.SPOTIFY_CALLBACK_BASE_URL).href;
 const spotify = {
   urls: {
     accounts: "https://accounts.spotify.com/",
@@ -113,27 +113,12 @@ class Spotify {
       };
     });
   }
-  static refreshAuthTokens(userId) {
-    return __async(this, null, function* () {
-      const { refreshToken } = yield this.getAuthTokens(userId);
-      const newTokens = yield this.requestAuthTokens(refreshToken);
-      yield this.saveAuthTokens(userId, newTokens);
-      return newTokens;
-    });
-  }
-  static getAuthTokens(userId) {
-    return __async(this, null, function* () {
-      return import_firestore.Firestore.getDocument(userId);
-    });
-  }
-  static saveAuthTokens(userId, tokens) {
-    return __async(this, null, function* () {
-      yield import_firestore.Firestore.setDocument(userId, tokens);
-    });
-  }
   static createAuthenticatedApi(userId) {
     return __async(this, null, function* () {
-      const { accessToken } = yield Spotify.getAuthTokens(userId);
+      const tokens = yield import_auth_tokens.AuthTokens.get(userId);
+      if (!tokens)
+        throw new Error("Cannot get auth tokens");
+      const { accessToken } = tokens;
       const spotifyWebApi = new import_spotify_web_api_node.default();
       spotifyWebApi.setAccessToken(accessToken);
       return spotifyWebApi;
