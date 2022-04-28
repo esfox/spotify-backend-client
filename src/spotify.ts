@@ -1,55 +1,73 @@
 import p from 'phin';
-import SpotifyWebApi from 'spotify-web-api-node';
-import { AuthTokens } from './auth-tokens';
 import { Config } from './config';
 import { FetchTokenErrorResponse, FetchTokenResponseBody } from './types';
 
-const callbackUrl = new URL('/callback', Config.SPOTIFY_CALLBACK_BASE_URL).href;
+const {
+  SPOTIFY_CLIENT_ID,
+  SPOTIFY_CLIENT_SECRET,
+  SPOTIFY_SCOPES,
+  SPOTIFY_CALLBACK_BASE_URL,
+} = Config;
+
+if(!SPOTIFY_CLIENT_ID || !SPOTIFY_CLIENT_SECRET || !SPOTIFY_SCOPES)
+  throw new Error('Invalid Spotify credentials');
+
+const callbackUrl = new URL('/callback', SPOTIFY_CALLBACK_BASE_URL).href;
+const spotifyAccountsUrl = 'https://accounts.spotify.com/';
 const spotify =
 {
   urls:
   {
-    accounts: 'https://accounts.spotify.com/',
-    api: 'https://api.spotify.com/v1',
+    token: new URL('/api/token', spotifyAccountsUrl),
+    authorize: new URL('/authorize', spotifyAccountsUrl),
   },
-  clientId: Config.SPOTIFY_CLIENT_ID,
-  clientSecret: Config.SPOTIFY_CLIENT_SECRET,
-  scopes: Config.SPOTIFY_SCOPES?.replace(/,/g, '+')
+  scopes: Config.SPOTIFY_SCOPES?.replace(/,/g, '+') as string
+};
+
+const getAuthorizationHeader = () =>
+{
+  const encodedCredentials = Buffer
+    .from(`${SPOTIFY_CLIENT_ID}:${SPOTIFY_CLIENT_SECRET}`)
+    .toString('base64');
+  return `Basic ${encodedCredentials}`;
 };
 
 export class Spotify
 {
-  static getOAuthUrl(userId: string)
+  static getOAuthUrl(identifier: string)
   {
-    if(!spotify.clientId || !spotify.scopes)
-      throw new Error('No Spotify Client ID provided');
+    if(!SPOTIFY_CLIENT_ID || !SPOTIFY_CLIENT_SECRET || !SPOTIFY_SCOPES)
+      throw new Error('Invalid Spotify credentials');
 
-    const oauthUrl = new URL('/authorize', spotify.urls.accounts);
+    const oauthUrl = spotify.urls.authorize;
     oauthUrl.searchParams.set('response_type', 'code');
     oauthUrl.searchParams.set('redirect_uri', callbackUrl);
-    oauthUrl.searchParams.set('state', userId);
-    oauthUrl.searchParams.set('client_id', spotify.clientId);
+    oauthUrl.searchParams.set('state', identifier);
+    oauthUrl.searchParams.set('client_id', SPOTIFY_CLIENT_ID);
     oauthUrl.searchParams.set('scope', spotify.scopes);
     return oauthUrl.href.replace(/%2B/g, '+');
   }
 
-  static async requestAuthTokens(authorizationCode: string)
+  static async requestAuthTokens(authorizationCode: string, isRefresh?: boolean)
   {
-    const encodedCredentials = Buffer
-      .from(`${spotify.clientId}:${spotify.clientSecret}`)
-      .toString('base64');
-
-    const response = await p<FetchTokenResponseBody>({
-      url: new URL('/api/token', spotify.urls.accounts).href,
-      method: 'POST',
-      headers: {
-        Authorization: `Basic ${encodedCredentials}`,
-      },
-      form: {
+    const form: { [index: string]: string } = (
+      isRefresh ? {
+        grant_type: 'refresh_token',
+        refresh_token: authorizationCode,
+      } : {
+        grant_type: 'authorization_code',
         code: authorizationCode,
         redirect_uri: callbackUrl,
-        grant_type: 'authorization_code',
+      }
+    );
+
+    const response = await p<FetchTokenResponseBody>({
+      url: spotify.urls.token.href,
+      method: 'POST',
+      headers: {
+        Authorization: getAuthorizationHeader(),
       },
+      form,
       parse: 'json',
     });
 
@@ -61,18 +79,6 @@ export class Spotify
       accessToken: body.access_token,
       refreshToken: body.refresh_token,
     };
-  }
-
-  static async createAuthenticatedApi(userId: string)
-  {
-    const tokens = await AuthTokens.get(userId);
-    if(!tokens)
-      throw new Error('Cannot get auth tokens');
-
-    const { accessToken } = tokens;
-    const spotifyWebApi = new SpotifyWebApi();
-    spotifyWebApi.setAccessToken(accessToken);
-    return spotifyWebApi;
   }
 }
 

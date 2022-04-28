@@ -1,11 +1,41 @@
 import Crypto from 'crypto';
 import { Config } from './config';
+import { AuthTokensType, AuthTokensWithIdentifier } from './types';
 
 const algorithm = Config.ENCRYPTION_ALGORITHM as Crypto.CipherGCMTypes;
 const key = Config.ENCRYPTION_KEY as string;
 
 export class Encryption
 {
+  static encryptTokens({
+    accessToken,
+    refreshToken,
+    identifier,
+  }: AuthTokensWithIdentifier)
+  {
+    const tokens: AuthTokensWithIdentifier = {
+      accessToken: Encryption.encrypt(accessToken),
+      refreshToken: Encryption.encrypt(refreshToken),
+    };
+
+    if(identifier)
+      tokens.identifier = Encryption.hash(identifier);
+
+    return tokens;
+  }
+
+  static decryptTokens({ accessToken, refreshToken }: Partial<AuthTokensType>)
+  {
+    const tokens: Partial<AuthTokensType> = {};
+    if(accessToken)
+      tokens.accessToken = Encryption.decrypt(accessToken);
+
+    if(refreshToken)
+      tokens.refreshToken = Encryption.decrypt(refreshToken);
+
+    return tokens;
+  }
+
   static encrypt(string: string)
   {
     const ivBuffer = Buffer.from(Crypto.randomBytes(12));

@@ -1,12 +1,22 @@
-import { AuthTokens } from './auth-tokens';
-import { startServer } from './server';
+import { Encryption } from './encryption';
+import { Server } from './server';
 import { Spotify } from './spotify';
+import { ObtainTokensCallback } from './types';
 
-export class SpotifyBackendClient
+export class SpotifyTokensHandler
 {
-  static startServer = startServer;
-  static createAuthenticatedApi = Spotify.createAuthenticatedApi;
-  static getLoginUrl = Spotify.getOAuthUrl;
-  static getAuthTokens = AuthTokens.get;
-  static refreshAuthTokens = AuthTokens.refresh;
+  static startServer = Server.start;
+  static getAuthorizeUrl = Spotify.getOAuthUrl;
+  static onObtainTokens = (callback: ObtainTokensCallback) => Server.onObtainTokens = callback;
+  static encodeIdentifier = Encryption.hash;
+  static decodeTokens = Encryption.decryptTokens;
+  static refreshAuthTokens = async (refreshToken: string) =>
+  {
+    const tokens = await Spotify.requestAuthTokens(refreshToken, true);
+    const { accessToken, refreshToken: newRefreshToken } = tokens;
+    return Encryption.encryptTokens({
+      accessToken,
+      refreshToken: newRefreshToken || refreshToken,
+    });
+  };
 }
