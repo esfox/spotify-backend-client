@@ -16,7 +16,7 @@ export class Server
 
   static async start()
   {
-    const server = fastify({ logger: true });
+    const server = fastify();
     server.get<{ Querystring: CallbackResponseBody }>('/callback', async(request, reply) =>
     {
       const { code, state: identifier } = request.query;
@@ -55,7 +55,7 @@ export class Server
     try
     {
       await server.listen(process.env.PORT || 2422);
-      console.log('Spotify Backend Client server started');
+      console.log('Spotify Tokens Handler server started');
       console.log(server.server.address());
     }
     catch (error)

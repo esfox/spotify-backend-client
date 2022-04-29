@@ -69,7 +69,7 @@ const pages = {
 class Server {
   static start() {
     return __async(this, null, function* () {
-      const server = (0, import_fastify.default)({ logger: true });
+      const server = (0, import_fastify.default)();
       server.get("/callback", (request, reply) => __async(this, null, function* () {
         const { code, state: identifier } = request.query;
         let tokens;
@@ -95,7 +95,7 @@ class Server {
       }));
       try {
         yield server.listen(process.env.PORT || 2422);
-        console.log("Spotify Backend Client server started");
+        console.log("Spotify Tokens Handler server started");
         console.log(server.server.address());
       } catch (error) {
         server.log.error(error);
