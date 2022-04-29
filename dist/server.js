@@ -2,8 +2,22 @@ var __create = Object.create;
 var __defProp = Object.defineProperty;
 var __getOwnPropDesc = Object.getOwnPropertyDescriptor;
 var __getOwnPropNames = Object.getOwnPropertyNames;
+var __getOwnPropSymbols = Object.getOwnPropertySymbols;
 var __getProtoOf = Object.getPrototypeOf;
 var __hasOwnProp = Object.prototype.hasOwnProperty;
+var __propIsEnum = Object.prototype.propertyIsEnumerable;
+var __defNormalProp = (obj, key, value) => key in obj ? __defProp(obj, key, { enumerable: true, configurable: true, writable: true, value }) : obj[key] = value;
+var __spreadValues = (a, b) => {
+  for (var prop in b || (b = {}))
+    if (__hasOwnProp.call(b, prop))
+      __defNormalProp(a, prop, b[prop]);
+  if (__getOwnPropSymbols)
+    for (var prop of __getOwnPropSymbols(b)) {
+      if (__propIsEnum.call(b, prop))
+        __defNormalProp(a, prop, b[prop]);
+    }
+  return a;
+};
 var __export = (target, all) => {
   for (var name in all)
     __defProp(target, name, { get: all[name], enumerable: true });
@@ -40,52 +54,57 @@ var __async = (__this, __arguments, generator) => {
 };
 var server_exports = {};
 __export(server_exports, {
-  startServer: () => startServer
+  Server: () => Server
 });
 module.exports = __toCommonJS(server_exports);
 var import_fastify = __toESM(require("fastify"));
 var import_fs = __toESM(require("fs"));
 var import_path = __toESM(require("path"));
-var import_auth_tokens = require("./auth-tokens");
+var import_encryption = require("./encryption");
 var import_spotify = require("./spotify");
-const server = (0, import_fastify.default)({ logger: true });
 const currentDirectory = __filename.substring(0, __filename.lastIndexOf("/"));
 const pages = {
   callback: import_fs.default.readFileSync(import_path.default.join(currentDirectory, "callback.html"), "utf-8")
 };
-server.get("/callback", (request, reply) => __async(void 0, null, function* () {
-  const { code, state: userId } = request.query;
-  let tokens;
-  try {
-    tokens = yield import_spotify.Spotify.requestAuthTokens(code);
-  } catch (error) {
-    if (error instanceof import_spotify.FetchTokenError) {
-      const { response } = error;
-      server.log.error(response);
-      return reply.status(response.status).send(response);
-    }
-    server.log.error(error);
-    return reply.status(500).send();
+class Server {
+  static start() {
+    return __async(this, null, function* () {
+      const server = (0, import_fastify.default)({ logger: true });
+      server.get("/callback", (request, reply) => __async(this, null, function* () {
+        const { code, state: identifier } = request.query;
+        let tokens;
+        try {
+          tokens = yield import_spotify.Spotify.requestAuthTokens(code);
+        } catch (error) {
+          if (error instanceof import_spotify.FetchTokenError) {
+            const { response } = error;
+            server.log.error(response);
+            return reply.status(response.status).send(response);
+          }
+          server.log.error(error);
+          return reply.status(500).send();
+        }
+        try {
+          if (Server.onObtainTokens)
+            Server.onObtainTokens(import_encryption.Encryption.encryptTokens(__spreadValues({ identifier }, tokens)));
+        } catch (error) {
+          server.log.error(error);
+          return reply.status(500).send();
+        }
+        return reply.header("Content-Type", "text/html").send(pages.callback);
+      }));
+      try {
+        yield server.listen(process.env.PORT || 2422);
+        console.log("Spotify Backend Client server started");
+        console.log(server.server.address());
+      } catch (error) {
+        server.log.error(error);
+        process.exit(1);
+      }
+    });
   }
-  try {
-    yield import_auth_tokens.AuthTokens.save(userId, tokens);
-  } catch (error) {
-    server.log.error(error);
-    return reply.status(500).send();
-  }
-  return reply.header("Content-Type", "text/html").send(pages.callback);
-}));
-const startServer = () => __async(void 0, null, function* () {
-  try {
-    yield server.listen(process.env.PORT || 2422);
-    console.log("Spotify Backend Client server started");
-    console.log(server.server.address());
-  } catch (error) {
-    server.log.error(error);
-    process.exit(1);
-  }
-});
+}
 // Annotate the CommonJS export names for ESM import in node:
 0 && (module.exports = {
-  startServer
+  Server
 });

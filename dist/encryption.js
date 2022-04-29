@@ -28,6 +28,27 @@ var import_config = require("./config");
 const algorithm = import_config.Config.ENCRYPTION_ALGORITHM;
 const key = import_config.Config.ENCRYPTION_KEY;
 class Encryption {
+  static encryptTokens({
+    accessToken,
+    refreshToken,
+    identifier
+  }) {
+    const tokens = {
+      accessToken: Encryption.encrypt(accessToken),
+      refreshToken: Encryption.encrypt(refreshToken)
+    };
+    if (identifier)
+      tokens.identifier = Encryption.hash(identifier);
+    return tokens;
+  }
+  static decryptTokens({ accessToken, refreshToken }) {
+    const tokens = {};
+    if (accessToken)
+      tokens.accessToken = Encryption.decrypt(accessToken);
+    if (refreshToken)
+      tokens.refreshToken = Encryption.decrypt(refreshToken);
+    return tokens;
+  }
   static encrypt(string) {
     const ivBuffer = Buffer.from(import_crypto.default.randomBytes(12));
     const cipher = import_crypto.default.createCipheriv(algorithm, key, ivBuffer);

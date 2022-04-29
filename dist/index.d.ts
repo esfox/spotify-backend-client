@@ -1,10 +1,13 @@
-import { AuthTokens } from './auth-tokens';
+import { Encryption } from './encryption';
+import { Server } from './server';
 import { Spotify } from './spotify';
-export declare class SpotifyBackendClient {
-    static startServer: () => Promise<void>;
-    static createAuthenticatedApi: typeof Spotify.createAuthenticatedApi;
-    static getLoginUrl: typeof Spotify.getOAuthUrl;
-    static getAuthTokens: typeof AuthTokens.get;
-    static refreshAuthTokens: typeof AuthTokens.refresh;
+import { ObtainTokensCallback } from './types';
+export declare class SpotifyTokensHandler {
+    static startServer: typeof Server.start;
+    static getAuthorizeUrl: typeof Spotify.getOAuthUrl;
+    static onObtainTokens: (callback: ObtainTokensCallback) => ObtainTokensCallback;
+    static encodeIdentifier: typeof Encryption.hash;
+    static decodeTokens: typeof Encryption.decryptTokens;
+    static refreshAuthTokens: (refreshToken: string) => Promise<import("./types").AuthTokensWithIdentifier>;
 }
 //# sourceMappingURL=index.d.ts.map

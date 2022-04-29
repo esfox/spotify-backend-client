@@ -10,8 +10,14 @@ export declare type CallbackResponseBody = {
     code: string;
     state: string;
 };
-export declare type AuthTokens = {
+export declare type AuthTokensType = {
     accessToken: string;
     refreshToken: string;
 };
+export declare type AuthTokensWithIdentifier = {
+    identifier?: string;
+    accessToken: string;
+    refreshToken: string;
+};
+export declare type ObtainTokensCallback = (tokens: AuthTokensWithIdentifier) => void;
 //# sourceMappingURL=types.d.ts.map

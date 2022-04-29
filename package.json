@@ -1,6 +1,6 @@
 {
   "name": "spotify-backend-client",
-  "version": "0.0.2",
+  "version": "0.0.3",
   "author": "osairis100@gmail.com",
   "license": "MIT",
   "main": "dist/index.js",
