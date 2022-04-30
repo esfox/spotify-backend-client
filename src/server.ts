@@ -54,7 +54,7 @@ export class Server
 
     try
     {
-      await server.listen(process.env.PORT || 2422);
+      await server.listen(process.env.PORT || 2422, '0.0.0.0');
       console.log('Spotify Tokens Handler server started');
       console.log(server.server.address());
     }

@@ -94,7 +94,7 @@ class Server {
         return reply.header("Content-Type", "text/html").send(pages.callback);
       }));
       try {
-        yield server.listen(process.env.PORT || 2422);
+        yield server.listen(process.env.PORT || 2422, "0.0.0.0");
         console.log("Spotify Tokens Handler server started");
         console.log(server.server.address());
       } catch (error) {
